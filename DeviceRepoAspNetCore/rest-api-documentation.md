@@ -1,10 +1,31 @@
-﻿# Audio Device REST API Documentation
+﻿
+# Audio Device REST API Documentation
 
-This API provides endpoints for managing audio devices.
+# Table of Contents
+1. [Introduction](#introduction)
+2. [Endpoints](#endpoints)
+   - [Get All Audio Devices](#get-all-audio-devices)
+   - [Get Audio Device by Key](#get-audio-device-by-key)
+   - [Add Audio Device](#add-audio-device)
+   - [Remove Audio Device](#remove-audio-device)
+   - [Update Device Volume](#update-device-volume)
+   - [Search Audio Devices](#search-audio-devices)
+3. [Messages](#messages)
+   - [EntireDeviceMessage](#entiredevicemessage)
+   - [VolumeChangeMessage](#volumechangemessage)
+
+
+## 1. Introduction
+The Audio Device REST API enables collecting and managing audio devices in a network.
+It supports operations like retrieving device details, adding devices, updating settings, and searching devices.
+Additionally, it provides API versioning and runtime information.
 
 ---
 
-## Get All Audio Devices
+## 2. Endpoints
+
+
+### Get All Audio Devices
 
 Retrieves a list of all available audio devices.
 
@@ -39,7 +60,7 @@ Retrieves a list of all available audio devices.
 
 ---
 
-## Get Audio Device by Key
+### Get Audio Device by Key
 
 Retrieves a single audio device by its `pnpId` and `hostName` (hostName will be hashed internally).
 
@@ -63,7 +84,7 @@ Retrieves a single audio device by its `pnpId` and `hostName` (hostName will be 
 
 ---
 
-## Add Audio Device
+### Add Audio Device
 
 Adds a new audio device to the system.
 
@@ -103,7 +124,7 @@ Adds a new audio device to the system.
 
 ---
 
-## Remove Audio Device
+### Remove Audio Device
 
 Removes an audio device from the system.
 
@@ -114,7 +135,7 @@ Removes an audio device from the system.
 
 ---
 
-## Update Device Volume
+### Update Device Volume
 
 Updates the volume of a specific audio device.
 
@@ -138,7 +159,7 @@ Updates the volume of a specific audio device.
 
 ---
 
-## Search Audio Devices
+### Search Audio Devices
 
 Search for audio devices by device description.
 
@@ -166,7 +187,7 @@ Search for audio devices by device description.
 
 ---
 
-## Messages
+## 3. Messages
 
 ### EntireDeviceMessage
 
