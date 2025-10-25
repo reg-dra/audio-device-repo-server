@@ -19,11 +19,9 @@ builder.Logging.AddDebug();
 builder.Services.Configure<MongoDbSettings>(
     builder.Configuration.GetSection("MongoDbSettings"));
 builder.Services.AddSingleton<CryptService>();
-//builder.Services.AddSingleton<IAudioDeviceStorage, InMemoryAudioDeviceStorage>();
 builder.Services.AddSingleton<IAudioDeviceStorage, MongoDbAudioDeviceStorage>();
 builder.Services.AddSingleton(new VersionProvider(VersionProvider.ReadVersionFromAssembly(), VersionProvider.GetRuntimeDescription()));
 
-// Add services to the container.
 builder.Services.AddRazorPages();
 builder.Services.AddControllers();
 builder.Services.AddCors(options =>
@@ -48,14 +46,13 @@ if (!app.Environment.IsDevelopment())
 
 // app.UseHttpsRedirection();
 
-// Use my middleware
 app.UseMiddleware<RequestResponseLoggingMiddleware>();
 
 app.UseStaticFiles();
 
 app.UseRouting();
 
-app.UseCors("AllowReactApp"); // Add this line to use the CORS policy
+app.UseCors("AllowReactApp");
 
 app.UseAuthorization();
 

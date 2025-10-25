@@ -19,3 +19,17 @@
 cd DeviceRepoAspNetCore
 dotnet run --launch-profile http
 ```
+
+## Used design patterns (excluding framework-provided ones)
+
+- Repository: `Services\IAudioDeviceStorage` and `Services\MongoDbAudioDeviceStorage` abstract and
+    encapsulate MongoDB persistence behind an interface.
+
+- DTO (data transfer object): `Models\RestApi\EntireDeviceMessage` and `Models\RestApi\VolumeChangeMessage`
+    defineAPI payloads separate from persistence models.
+
+- Adapter/Mapper: `Models\MongoDb\AudioDeviceDocument.ToDeviceMessage()`
+    converts MongoDB documents to REST DTOs.
+
+- Specification (via custom validation attribute): `Models\RestApi\AllowedDeviceMessageTypesAttribute`
+    constrains allowed `DeviceMessageType` values on models.
