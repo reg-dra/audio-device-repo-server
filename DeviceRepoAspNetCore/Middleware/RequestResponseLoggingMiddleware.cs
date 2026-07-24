@@ -1,15 +1,17 @@
-﻿namespace DeviceRepoAspNetCore.Middleware;
+﻿using System.Text;
 
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
-using System.IO;
-using System.Text;
-using System.Threading.Tasks;
+namespace DeviceRepoAspNetCore.Middleware;
 
 public class RequestResponseLoggingMiddleware(RequestDelegate next, ILogger<RequestResponseLoggingMiddleware> logger)
 {
     public async Task InvokeAsync(HttpContext context)
     {
+        if (!context.Request.Path.StartsWithSegments("/api"))
+        {
+            await next(context);
+            return;
+        }
+
         // Log the request
         var request = await FormatRequest(context.Request);
         var requestHeaders = string.Join(", ", context.Request.Headers.Select(h => $"{h.Key}: {h.Value}"));
@@ -30,6 +32,11 @@ public class RequestResponseLoggingMiddleware(RequestDelegate next, ILogger<Requ
 
         // Copy the contents of the new memory stream (which contains the response) to the original stream
         await responseBody.CopyToAsync(originalBodyStream);
+    }
+
+    private static bool ShouldLogRequest(PathString path)
+    {
+        return path.StartsWithSegments("/api");
     }
 
     private static async Task<string> FormatRequest(HttpRequest request)
