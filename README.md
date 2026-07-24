@@ -7,46 +7,54 @@ Audio Device Repository Server is a ASP.NET-Core-with REST-API-backend for stori
 <div style="zoom: 0.5;">
 
 ```mermaid
+
 flowchart BT
 
-classDef dottedBox fill:transparent,fill-opacity:0.55, stroke-dasharray:20 5,stroke-width:2px;
-classDef stressedBox fill:#f0f0f0,fill-opacity:0.2,stroke-width:4px;
-classDef invisibleNode fill:transparent,stroke:transparent;
+    classDef dottedBox fill:transparent, fill-opacity:0.55, stroke-dasharray:10 8, stroke-width:2px;
+    classDef stressedBox fill:#f0f0f0,fill-opacity:0.2,stroke-width:4px;
+    classDef invisibleNode fill:transparent, stroke:transparent;
 
-coreAudioApi["Core Audio<br>(Windows API) or<br>Pulse Lib<br>(Linux PulseAudio)"]
+    coreAudioApi["Core Audio<br>(Windows API) or<br>Pulse Lib<br>(Linux PulseAudio)"]
 
-subgraph scannerService["win-sound-scanner-go or linux-sound-scanner"]
-    invisible1["<br><br><br><br><br>"]
     class invisible1 invisibleNode
     winSoundScannerService["WinSoundScanner<br>(Windows Service) or<br>LinuxSoundScanner<br>(Docker Container)"]
     invisible2["<br><br><br><br><br>"]
     class invisible2 invisibleNode
-end
-class scannerService dottedBox
 
-subgraph requestQueueMicroservice["<br>"]
-    requestQueue[("Request Queue<br>(RabbitMQ channel)")]
-    rabbitMqRestForwarder["RmqToRestApiForwarder<br>(.NET microservice)"]
-end
-class requestQueueMicroservice dottedBox
+    subgraph eventTopicKafkaMicroservice["<br>"]
+        eventTopic[("Event Topic<br>(Kafka topic)")]
+        class eventTopic dottedBox
+        kafkaRestForwarder["KafkaToRestApiForwarder<br>(.NET microservice)"]
+        class kafkaRestForwarder dottedBox
+    end
+    class eventTopicKafkaMicroservice dottedBox
 
-subgraph repoServer["<br>"]
-  invisible1["<br><br><br>"]
-  class invisible1 invisibleNode
-  deviceRepositoryApi["Device Repository Server<br>(REST API)"]
-  invisible2["<br><br><br>"]
-  class invisible2 invisibleNode
-end
-class repoServer stressedBox
+    subgraph requestQueueRabbitMqMicroservice["<br>"]
+        requestQueue[("Request Queue<br>(RabbitMQ channel)")]
+        rabbitMqRestForwarder["RmqToRestApiForwarder<br>(.NET microservice)"]
+    end
+    class requestQueueRabbitMqMicroservice dottedBox
 
-winSoundScannerService --> |Access device| coreAudioApi
-coreAudioApi -->|Device events| winSoundScannerService
+	subgraph repoServer["<br>"]
+	  class invisible1 invisibleNode
+	  deviceRepositoryApi["Device Repository Server<br>(REST API)"]
+	  class invisible2 invisibleNode
+	end
+	class repoServer stressedBox
 
-winSoundScannerService -->|Publish request messages| requestQueue
 
-requestQueue -->|Fetch request messages| rabbitMqRestForwarder
-rabbitMqRestForwarder --> |Detect request messages| requestQueue
-rabbitMqRestForwarder -->|POST/PUT requests| deviceRepositoryApi
+    winSoundScannerService --> |Access device| coreAudioApi
+    coreAudioApi --->|Device events| winSoundScannerService
+
+    winSoundScannerService -..-> |Publish device events| eventTopic
+    winSoundScannerService --->|Publish request messages| requestQueue
+
+    eventTopic -->|Fetch events| kafkaRestForwarder
+    kafkaRestForwarder --> |Detect events| eventTopic
+    kafkaRestForwarder -..->|POST/PUT requests| deviceRepositoryApi
+    requestQueue -->|Fetch messages| rabbitMqRestForwarder
+    rabbitMqRestForwarder --> |Detect messages| requestQueue
+    rabbitMqRestForwarder --->|POST/PUT requests| deviceRepositoryApi
 
 ```
 </div>
@@ -68,19 +76,16 @@ rabbitMqRestForwarder -->|POST/PUT requests| deviceRepositoryApi
 - Postman collection for API checks.
 - LibMan for client-side web assets.
 
-## Used design patterns (excluding framework-provided ones)
+## Software design pattern examples
 
-- Repository: `Services\IAudioDeviceStorage` and `Services\MongoDbAudioDeviceStorage` abstract and
+- Repository: `Services\IAudioDeviceStorage` and `Services\MongoDbAudioDeviceStorage` 
   encapsulate MongoDB persistence behind an interface.
 
 - DTO (data transfer object): `Models\RestApi\EntireDeviceMessage` and `Models\RestApi\VolumeChangeMessage`
-  defineAPI payloads separate from persistence models.
+  define API payloads separately from persistence models.
 
 - Adapter/Mapper: `Models\MongoDb\AudioDeviceDocument.ToDeviceMessage()`
   converts MongoDB documents to REST DTOs.
-
-- Specification (via custom validation attribute): `Models\RestApi\AllowedDeviceMessageTypesAttribute`
-  constrains allowed `DeviceMessageType` values on models.
 
 ## Build and Debug
 
@@ -153,6 +158,7 @@ http://localhost:5027/
 
 ## Changelog
 
+- 2026-07-24 Logging noise reduction: middleware logs only /api-requets (not static file requests etc..
 - 2026-04-10 Added `Dockerfile` for containerized server runs.
 - 2026-04-09 Added environment variable usage for MongoDB settings.
 - 2026-02-12 Updated `LICENSE` and `README` metadata.
