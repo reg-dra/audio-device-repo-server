@@ -68,19 +68,16 @@ rabbitMqRestForwarder -->|POST/PUT requests| deviceRepositoryApi
 - Postman collection for API checks.
 - LibMan for client-side web assets.
 
-## Used design patterns (excluding framework-provided ones)
+## Software design pattern examples
 
-- Repository: `Services\IAudioDeviceStorage` and `Services\MongoDbAudioDeviceStorage` abstract and
+- Repository: `Services\IAudioDeviceStorage` and `Services\MongoDbAudioDeviceStorage` 
   encapsulate MongoDB persistence behind an interface.
 
 - DTO (data transfer object): `Models\RestApi\EntireDeviceMessage` and `Models\RestApi\VolumeChangeMessage`
-  defineAPI payloads separate from persistence models.
+  define API payloads separately from persistence models.
 
 - Adapter/Mapper: `Models\MongoDb\AudioDeviceDocument.ToDeviceMessage()`
   converts MongoDB documents to REST DTOs.
-
-- Specification (via custom validation attribute): `Models\RestApi\AllowedDeviceMessageTypesAttribute`
-  constrains allowed `DeviceMessageType` values on models.
 
 ## Build and Debug
 
@@ -153,6 +150,7 @@ http://localhost:5027/
 
 ## Changelog
 
+- 2026-07-24 Logging noise reduction: middleware logs only /api-requets (not static file requests etc..
 - 2026-04-10 Added `Dockerfile` for containerized server runs.
 - 2026-04-09 Added environment variable usage for MongoDB settings.
 - 2026-02-12 Updated `LICENSE` and `README` metadata.
