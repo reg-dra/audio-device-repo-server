@@ -7,46 +7,54 @@ Audio Device Repository Server is a ASP.NET-Core-with REST-API-backend for stori
 <div style="zoom: 0.5;">
 
 ```mermaid
+
 flowchart BT
 
-classDef dottedBox fill:transparent,fill-opacity:0.55, stroke-dasharray:20 5,stroke-width:2px;
-classDef stressedBox fill:#f0f0f0,fill-opacity:0.2,stroke-width:4px;
-classDef invisibleNode fill:transparent,stroke:transparent;
+    classDef dottedBox fill:transparent, fill-opacity:0.55, stroke-dasharray:10 8, stroke-width:2px;
+    classDef stressedBox fill:#f0f0f0,fill-opacity:0.2,stroke-width:4px;
+    classDef invisibleNode fill:transparent, stroke:transparent;
 
-coreAudioApi["Core Audio<br>(Windows API) or<br>Pulse Lib<br>(Linux PulseAudio)"]
+    coreAudioApi["Core Audio<br>(Windows API) or<br>Pulse Lib<br>(Linux PulseAudio)"]
 
-subgraph scannerService["win-sound-scanner-go or linux-sound-scanner"]
-    invisible1["<br><br><br><br><br>"]
     class invisible1 invisibleNode
     winSoundScannerService["WinSoundScanner<br>(Windows Service) or<br>LinuxSoundScanner<br>(Docker Container)"]
     invisible2["<br><br><br><br><br>"]
     class invisible2 invisibleNode
-end
-class scannerService dottedBox
 
-subgraph requestQueueMicroservice["<br>"]
-    requestQueue[("Request Queue<br>(RabbitMQ channel)")]
-    rabbitMqRestForwarder["RmqToRestApiForwarder<br>(.NET microservice)"]
-end
-class requestQueueMicroservice dottedBox
+    subgraph eventTopicKafkaMicroservice["<br>"]
+        eventTopic[("Event Topic<br>(Kafka topic)")]
+        class eventTopic dottedBox
+        kafkaRestForwarder["KafkaToRestApiForwarder<br>(.NET microservice)"]
+        class kafkaRestForwarder dottedBox
+    end
+    class eventTopicKafkaMicroservice dottedBox
 
-subgraph repoServer["<br>"]
-  invisible1["<br><br><br>"]
-  class invisible1 invisibleNode
-  deviceRepositoryApi["Device Repository Server<br>(REST API)"]
-  invisible2["<br><br><br>"]
-  class invisible2 invisibleNode
-end
-class repoServer stressedBox
+    subgraph requestQueueRabbitMqMicroservice["<br>"]
+        requestQueue[("Request Queue<br>(RabbitMQ channel)")]
+        rabbitMqRestForwarder["RmqToRestApiForwarder<br>(.NET microservice)"]
+    end
+    class requestQueueRabbitMqMicroservice dottedBox
 
-winSoundScannerService --> |Access device| coreAudioApi
-coreAudioApi -->|Device events| winSoundScannerService
+	subgraph repoServer["<br>"]
+	  class invisible1 invisibleNode
+	  deviceRepositoryApi["Device Repository Server<br>(REST API)"]
+	  class invisible2 invisibleNode
+	end
+	class repoServer stressedBox
 
-winSoundScannerService -->|Publish request messages| requestQueue
 
-requestQueue -->|Fetch request messages| rabbitMqRestForwarder
-rabbitMqRestForwarder --> |Detect request messages| requestQueue
-rabbitMqRestForwarder -->|POST/PUT requests| deviceRepositoryApi
+    winSoundScannerService --> |Access device| coreAudioApi
+    coreAudioApi --->|Device events| winSoundScannerService
+
+    winSoundScannerService -..-> |Publish device events| eventTopic
+    winSoundScannerService --->|Publish request messages| requestQueue
+
+    eventTopic -->|Fetch events| kafkaRestForwarder
+    kafkaRestForwarder --> |Detect events| eventTopic
+    kafkaRestForwarder -..->|POST/PUT requests| deviceRepositoryApi
+    requestQueue -->|Fetch messages| rabbitMqRestForwarder
+    rabbitMqRestForwarder --> |Detect messages| requestQueue
+    rabbitMqRestForwarder --->|POST/PUT requests| deviceRepositoryApi
 
 ```
 </div>
