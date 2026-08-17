@@ -1,7 +1,6 @@
 using DeviceController.SmokeHost;
 using DeviceControllerLib.Controllers;
 using DeviceControllerLib.Services;
-using DeviveController.SmokeHost;
 
 var builder = WebApplication.CreateBuilder(args);
 

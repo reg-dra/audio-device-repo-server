@@ -2,13 +2,13 @@ using System.Collections.Concurrent;
 using DeviceControllerLib.Models.RestApi;
 using DeviceControllerLib.Services;
 
-namespace DeviveController.SmokeHost;
+namespace DeviceController.SmokeHost;
 
 public sealed class InMemoryAudioDeviceStorage : IAudioDeviceStorage
 {
     private readonly ConcurrentDictionary<(string PnpId, string HostName), EntireDeviceMessage> _devices = new();
 
-    public IEnumerable<EntireDeviceMessage> GetAll() => _devices.Values.ToArray();
+    public IEnumerable<EntireDeviceMessage> GetAll() => [.. _devices.Values];
 
     public void Add(EntireDeviceMessage entireDeviceMessage)
     {
@@ -48,12 +48,14 @@ public sealed class InMemoryAudioDeviceStorage : IAudioDeviceStorage
     {
         var lowered = query.ToLowerInvariant();
 
-        return _devices.Values
-            .Where(d =>
-                d.PnpId.ToLowerInvariant().Contains(lowered) ||
-                d.Name.ToLowerInvariant().Contains(lowered) ||
-                d.HostName.ToLowerInvariant().Contains(lowered) ||
-                d.OperationSystemName.ToLowerInvariant().Contains(lowered))
-            .ToArray();
+        return
+        [
+            .. _devices.Values
+                .Where(d =>
+                    d.PnpId.ToLowerInvariant().Contains(lowered) ||
+                    d.Name.ToLowerInvariant().Contains(lowered) ||
+                    d.HostName.ToLowerInvariant().Contains(lowered) ||
+                    d.OperationSystemName.ToLowerInvariant().Contains(lowered))
+        ];
     }
 }

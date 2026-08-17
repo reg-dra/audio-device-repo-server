@@ -34,11 +34,6 @@ public class RequestResponseLoggingMiddleware(RequestDelegate next, ILogger<Requ
         await responseBody.CopyToAsync(originalBodyStream);
     }
 
-    private static bool ShouldLogRequest(PathString path)
-    {
-        return path.StartsWithSegments("/api");
-    }
-
     private static async Task<string> FormatRequest(HttpRequest request)
     {
         request.EnableBuffering();
